@@ -28,3 +28,19 @@ target_link_libraries(${LSP_PROJECT}_test ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRAR
 add_test(${LSP_PROJECT} ${LSP_PROJECT}_test)
 
 endif(USE_TESTS)
+
+#-------------------------------------------------------------------------------
+# Install
+#-------------------------------------------------------------------------------
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
+        DESTINATION .
+        FILES_MATCHING PATTERN "*.hpp"
+        PATTERN "*.h"
+)
+
+INSTALL( TARGETS
+         ${LSP_PROJECT}
+         DESTINATION lib
+         COMPONENT Runtime
+)
