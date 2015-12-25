@@ -1,12 +1,19 @@
 #include "JsonWriter.h"
 
-#include <sequence/Parser.hpp>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 
+#include <vector>
+#include <string>
+
+#include <sequence/Parser.hpp>
+#include <sequence/ItemIO.hpp>
+#include <sequence/details/StringUtils.hpp>
+
 namespace sequence {
 
-inline static void printRegular(const Item &item) {
+void printRegular(const Item &item) {
   const auto pFilename = item.filename.c_str();
   switch (item.getType()) {
   case Item::SINGLE:
@@ -16,43 +23,29 @@ inline static void printRegular(const Item &item) {
     printf("Invalid\n");
     break;
   case Item::INDICED:
-    printf("%s (%lu) %d\n", pFilename, (unsigned long)item.indices.size(),
-           item.padding);
+    printf("%s (%zu)\n", pFilename, item.indices.size());
     break;
   case Item::PACKED:
     if (item.step == 1)
-      printf("%s [%d:%d] #%d\n", pFilename, item.start, item.end, item.padding);
+      printf("%s [%d:%d]\n", pFilename, item.start, item.end);
     else
-      printf("%s [%d:%d]/%d #%d\n", pFilename, item.start, item.end, item.step,
-             item.padding);
+      printf("%s [%d:%d]/%d\n", pFilename, item.start, item.end, item.step);
     break;
   }
 }
 
-inline static void printRegular(const FolderContent &result) {
-  printf("\n\n* %s\n", result.name.c_str());
-  for (const Item &item : result.directories)
-    printRegular(item);
-  printf("\n");
-  for (const Item &item : result.files)
-    printRegular(item);
-}
+void printRegular(const FolderContent &result) {
 
-inline static const char *getTypeString(Item::Type type) {
-  switch (type) {
-  case Item::INVALID:
-    return "invalid";
-  case Item::SINGLE:
-    return "single";
-  case Item::INDICED:
-    return "indiced";
-  case Item::PACKED:
-    return "packed";
+  const std::string& folder = result.name;
+  const size_t indexOfLastNonSlash = folder.find_last_not_of('/');
+  const size_t stringNoSlashSize = indexOfLastNonSlash + 1;
+  for (const Item &item : result.files) {
+    printf("%.*s/", (int)(stringNoSlashSize), folder.c_str());
+    printRegular(item);
   }
-  return nullptr;
 }
 
-inline static std::string toJson(const Item &item) {
+std::string toJson(const Item &item) {
   json::JsonObjectStreamWriter writer;
   const auto type = item.getType();
   writer << std::make_pair("type", getTypeString(type));
@@ -80,7 +73,7 @@ inline static std::string toJson(const Item &item) {
   return writer.build();
 }
 
-inline static void printJson(const FolderContent &result) {
+void printJson(const FolderContent &result) {
   json::JsonObjectStreamWriter writer;
   writer << std::make_pair("path", result.name.c_str());
   { // directories
@@ -164,13 +157,14 @@ int main(int argc, char **argv) {
       folder = arg;
   }
 
-  list<Item> folders;
+  vector<string> folders;
   folders.emplace_back(folder);
 
   while (!folders.empty()) {
-    const auto &current = folders.front().filename;
+    const auto current = move(folders.back());
+    folders.pop_back();
 
-    auto result = parseDir(configuration, current.c_str());
+    auto result = parseDir(configuration, current);
 
     for (const Item &item : result.directories) {
       const string &filename = item.filename;
@@ -178,17 +172,16 @@ int main(int argc, char **argv) {
           filename != "..") {
         const bool lastCurrentCharIsSlash = current.back() == '/';
         if (lastCurrentCharIsSlash)
-          folders.emplace_back(current + filename);
+          folders.push_back(concat(current, filename));
         else
-          folders.emplace_back(current + '/' + filename);
+          folders.push_back(concat(current , "/", filename));
       }
     }
-    if (json)
+    if (json) {
       printJson(result);
-    else
+    } else {
       printRegular(result);
-
-    folders.pop_front();
+    }
   }
 
   return EXIT_SUCCESS;
