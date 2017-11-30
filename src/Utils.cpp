@@ -64,7 +64,7 @@ void extractFileIndicesAndNormalize(StringView path, Indices &indices) {
       continue;
     }
     IndexParser parser(integer);
-    if (!parser.overflowed) {
+    if (!parser.overflowed && (integer.size() < MAX_PADDING)) {
       indices.push_back(parser.index);
       memset(integer.ptr(), PADDING_CHAR, integer.size());
     }
