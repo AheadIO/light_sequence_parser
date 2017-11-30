@@ -46,6 +46,29 @@ TEST(Parser, simpleSequence) {
   EXPECT_EQ(Items({createSequence("/path/f#.jpg", {1, 2})}), content.files);
 }
 
+TEST(Parser, tooLongPadding) {
+  StringFileLister lister({"/path/f000000000001.jpg", "/path/f000000000002.jpg"});
+  const auto content = parse(Configuration(), lister());
+  Items items;
+  items.push_back(createSingleFile("/path/f000000000001.jpg"));
+  items.push_back(createSingleFile("/path/f000000000002.jpg"));
+
+  EXPECT_EQ(items, content.files);
+}
+
+TEST(Parser, tooLongPaddingAndNormalSequence) {
+  StringFileLister lister({"/path/f000000000001.jpg", "/path/f000000000002.jpg", "/path/f01.jpg", "/path/f02.jpg"});
+  const auto content = parse(Configuration(), lister());
+  Items items;
+  items.push_back(createSequence("/path/f##.jpg", {1, 2}));
+  items.push_back(createSingleFile("/path/f000000000001.jpg"));
+  items.push_back(createSingleFile("/path/f000000000002.jpg"));
+
+  EXPECT_EQ(items, content.files);
+}
+
+
+
 TEST(Parser, simpleSequencePacked) {
   StringFileLister lister({"/path/f1.jpg", "/path/f2.jpg", "/path/f3.jpg"});
   Configuration configuration;

@@ -45,6 +45,7 @@ size_t getPivotIndex(const SplitIndexStrategy strategy, const Bucket &bucket) {
   default:
     assert(0);
   }
+  return retainNone(bucket);
 }
 
 SplitBuckets splitAllAndSort(const SplitIndexStrategy strategy,
