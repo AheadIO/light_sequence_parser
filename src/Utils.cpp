@@ -52,6 +52,8 @@ std::vector<StringView> integerRanges(StringView view) {
 
 void extractFileIndicesAndNormalize(StringView path, Indices &indices) {
   const auto npos = CStringView::npos;
+  if (path.contains(PADDING_CHAR))
+      return;//we can't process file names that contain PADDING_CHAR
   indices.clear();
   const size_t lastSeparator = path.lastIndexOf(PATH_SEPARATOR);
   const size_t fileIndex = lastSeparator == npos ? 0 : lastSeparator + 1;

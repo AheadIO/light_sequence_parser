@@ -140,4 +140,26 @@ TEST(Parser, fileWithPattern) {
             content.files);
 }
 
+TEST(Parser, fileWithPatternAndNumber) {
+  StringFileLister lister({"file##(1).ext", "file##(2).ext"});
+  Configuration configuration;
+  configuration.pack = true;
+  const auto content = parse(configuration, lister());
+  EXPECT_EQ(Items({createSingleFile("file##(1).ext"),createSingleFile("file##(2).ext")}),
+            content.files);
+}
+
+TEST(Parser, bakeSingleton) {
+  StringFileLister lister({"file-1.0.2.png", "file-1.0.3.png", "file-1.0.0.png"});
+  Configuration configuration;
+  configuration.pack = true;
+  configuration.sort = true;
+  configuration.bakeSingleton = true;
+  configuration.mergePadding = true;
+  const auto content = parse(configuration, lister());
+
+  EXPECT_EQ(Items({createSingleFile("file-1.0.0.png"),createSequence("file-1.0.#.png", 2, 3)}),
+            content.files);
+}
+
 } // namespace sequence
