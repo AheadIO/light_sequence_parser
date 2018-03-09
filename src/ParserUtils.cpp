@@ -49,6 +49,7 @@ size_t getPivotIndex(const SplitIndexStrategy strategy, const Bucket &bucket) {
 }
 
 SplitBuckets splitAllAndSort(const SplitIndexStrategy strategy,
+                             const bool flatternSingle,
                              Buckets splittable_buckets) {
   SplitBuckets buckets;
   const auto pusher = [&splittable_buckets](Bucket b) {
@@ -66,7 +67,7 @@ SplitBuckets splitAllAndSort(const SplitIndexStrategy strategy,
         bucket.split(index, pusher);
       }
     } else {
-      if (bucket.single()) {
+      if (bucket.single() && flatternSingle) {
         bucket.flatten(pusher);
       } else {
         buckets.emplace_back(std::move(bucket));

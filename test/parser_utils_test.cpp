@@ -35,7 +35,7 @@ SplitBuckets splitAndSort(SplitIndexStrategy stategy,
                           Bucket bucket = getBucket()) {
   Buckets buckets;
   buckets.push_back(std::move(bucket));
-  return splitAllAndSort(stategy, std::move(buckets));
+  return splitAllAndSort(stategy, false, std::move(buckets));
 }
 
 TEST(splitAll, retainNone) {

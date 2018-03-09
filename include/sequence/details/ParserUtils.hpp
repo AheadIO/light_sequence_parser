@@ -17,6 +17,7 @@ size_t getPivotIndex(const SplitIndexStrategy strategy, const Bucket &bucket);
 
 // Recursively split buckets and sort the outcome.
 SplitBuckets splitAllAndSort(const SplitIndexStrategy strategy,
+                             const bool flatternSingle,
                              Buckets splittable_buckets);
 
 // Merges buckets with same filename but different paddings.
