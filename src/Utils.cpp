@@ -52,6 +52,8 @@ std::vector<StringView> integerRanges(StringView view) {
 
 void extractFileIndicesAndNormalize(StringView path, Indices &indices) {
   const auto npos = CStringView::npos;
+  if (path.contains(PADDING_CHAR))
+      return;//we can't process file names that contain PADDING_CHAR
   indices.clear();
   const size_t lastSeparator = path.lastIndexOf(PATH_SEPARATOR);
   const size_t fileIndex = lastSeparator == npos ? 0 : lastSeparator + 1;
@@ -212,7 +214,7 @@ std::string SplitBucket::getBakedPattern(Index value) const {
   std::tie(prefix, suffix) = getInternalPrefixAndSuffix(pattern);
   const auto padding = pattern.size() - prefix.size() - suffix.size();
   char buffer[10]; // 4,294,967,295 is 10 characters long maximum.
-  StringView view(buffer, padding == 1 ? 1 + std::log10(value) : padding);
+  StringView view(buffer, padding == 1 ? 1 + std::log10(value >=1 ? value : 1) : padding);
   bake(value, view);
   return concat(prefix, view, suffix);
 }
