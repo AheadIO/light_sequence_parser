@@ -31,6 +31,12 @@ getInternalPrefixAndSuffix(CStringView pattern) {
                         pattern.substr(pattern.lastIndexOf(PADDING_CHAR) + 1));
 }
 
+CStringView
+getInternalPadding(const CStringView& prefix, const CStringView& suffix) {
+  return { prefix.end(),
+              static_cast<size_t>(std::distance(prefix.end(), suffix.begin())) };
+}
+
 IndexParser::IndexParser(CStringView str) {
   for (const char c : str) {
     put(c);
@@ -177,9 +183,19 @@ SplitBucket::SplitBucket(Bucket &&bucket) {
 
 SplitBucket::SplitBucket(SplitBucket &a, SplitBucket &b) {
   assert(a.canMerge(b));
-  CStringView prefix, suffix;
-  std::tie(prefix, suffix) = getInternalPrefixAndSuffix(a.pattern);
-  pattern = concat(prefix, "#", suffix);
+  CStringView a_prefix, a_suffix;
+  std::tie(a_prefix, a_suffix) = getInternalPrefixAndSuffix(a.pattern);
+  auto a_padding = getInternalPadding(a_prefix, a_suffix);
+
+  CStringView b_prefix, b_suffix;
+  std::tie(b_prefix, b_suffix) = getInternalPrefixAndSuffix(b.pattern);
+  auto b_padding = getInternalPadding(b_prefix, b_suffix);
+
+  const auto padding = a_padding.size() < b_padding.size()
+          ? a_padding
+          : b_padding;
+
+  pattern = concat(a_prefix, padding, a_suffix);
   sortedIndices = std::move(a.sortedIndices);
   sortedIndices.insert(std::end(sortedIndices), std::begin(b.sortedIndices),
                        std::end(b.sortedIndices));
@@ -197,11 +213,32 @@ bool SplitBucket::containsPadding() const {
 }
 
 bool SplitBucket::canMerge(const SplitBucket &other) const {
-  if (!containsPadding() || !other.containsPadding() ||
-      getInternalPrefixAndSuffix(pattern) !=
-          getInternalPrefixAndSuffix(other.pattern)) {
+  if (!containsPadding() || !other.containsPadding() )
+      return false;
+
+  const auto& thisPrefixSuffix = getInternalPrefixAndSuffix(pattern);
+  const auto& otherPrefixSuffix = getInternalPrefixAndSuffix(other.pattern);
+  if(thisPrefixSuffix != otherPrefixSuffix) {
     return false;
   }
+
+  const auto& thisPadding = getInternalPadding(thisPrefixSuffix.first, thisPrefixSuffix.second);
+  const auto& otherPadding = getInternalPadding(otherPrefixSuffix.first, otherPrefixSuffix.second);
+
+  // make sure we don't lose zeroes
+  // We can safly reduce ### to # only if all indeces is greater or equal than 10
+  if(otherPadding.size() < thisPadding.size()) {
+      // reducing this
+      assert(!sortedIndices.empty());
+      if(sortedIndices.front() < std::pow(10, otherPadding.size()))
+          return false;
+  } else if(thisPadding.size() < otherPadding.size()) {
+      // reducing other
+      assert(!other.sortedIndices.empty());
+      if(other.sortedIndices.front() < std::pow(10, thisPadding.size()))
+          return false;
+  }
+
   FakeSet set;
   std::set_intersection(std::begin(sortedIndices), std::end(sortedIndices),
                         std::begin(other.sortedIndices),

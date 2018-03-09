@@ -32,7 +32,7 @@ FolderContent parse(const Configuration &config,
     }
   }
   // Splitting recursively to retain a single location.
-  auto buckets = splitAllAndSort(config.getPivotIndex, bucketizer.transfer());
+  auto buckets = splitAllAndSort(config.getPivotIndex, !config.mergePadding, bucketizer.transfer());
   // Merging padding if necessary.
   if (config.mergePadding && buckets.size() >= 2) {
     mergeCompatiblePadding(buckets);
