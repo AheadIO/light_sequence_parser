@@ -67,7 +67,7 @@ SplitBuckets splitAllAndSort(const SplitIndexStrategy strategy,
         bucket.split(index, pusher);
       }
     } else {
-      if (bucket.single() && flatternSingle) {
+      if (bucket.single() && (flatternSingle || bucket.columns.size() > 1) ) {
         bucket.flatten(pusher);
       } else {
         buckets.emplace_back(std::move(bucket));
