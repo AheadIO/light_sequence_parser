@@ -26,7 +26,6 @@ namespace details {
 
 std::pair<CStringView, CStringView>
 getInternalPrefixAndSuffix(CStringView pattern) {
-  assert(pattern.contains(PADDING_CHAR));
   return std::make_pair(pattern.substr(0, pattern.indexOf(PADDING_CHAR)),
                         pattern.substr(pattern.lastIndexOf(PADDING_CHAR) + 1));
 }
@@ -314,6 +313,12 @@ void SplitBucket::output(bool bakeSingleton, std::function<void(Item)> push) {
       push(createSingleFile(pattern));
     }
   }
+}
+
+bool SplitBucket::operator<(const SplitBucket &other) const {
+    const auto& thisPair = getInternalPrefixAndSuffix(pattern);
+    const auto& otherPair = getInternalPrefixAndSuffix(other.pattern);
+    return thisPair < otherPair;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
