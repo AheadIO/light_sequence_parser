@@ -147,9 +147,7 @@ struct SplitBucket {
   void pack();
   void output(bool bakeSingleton, std::function<void(Item)> push);
 
-  bool operator<(const SplitBucket &other) const {
-    return pattern < other.pattern;
-  }
+  bool operator<(const SplitBucket &other) const;
 };
 
 // Returns the step of the sorted sequence or -1.
