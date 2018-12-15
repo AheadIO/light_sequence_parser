@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+#include <array>
+
 #include <sequence/details/StringUtils.hpp>
 
 namespace sequence {
