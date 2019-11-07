@@ -33,7 +33,7 @@ std::string createPattern(CStringView prefix, CStringView suffix,
   }
   std::array<char, MAX_PADDING> buffer;
   std::fill(buffer.begin(), buffer.end(), PADDING_CHAR);
-  return concat(prefix, CStringView(buffer.cbegin(), padding), suffix);
+  return concat(prefix, CStringView(buffer.data(), padding), suffix);
 }
 
 std::pair<CStringView, CStringView> getPrefixAndSuffix(CStringView pattern) {

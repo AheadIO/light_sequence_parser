@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.9.0)
 
 set(LSP_PROJECT "sequenceparser")
 
@@ -12,7 +12,8 @@ else ()
 endif()
 
 set_property(TARGET ${LSP_PROJECT} PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set_property(TARGET ${LSP_PROJECT} PROPERTY COMPILE_FLAGS -std=c++0x)
+set_property(TARGET ${LSP_PROJECT} PROPERTY CXX_STANDARD 11)
+target_compile_definitions(${LSP_PROJECT} PUBLIC -DNOMINMAX)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

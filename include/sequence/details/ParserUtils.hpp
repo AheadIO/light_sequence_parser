@@ -2,6 +2,8 @@
 
 #include "sequence/Parser.hpp"
 #include "sequence/details/Utils.hpp"
+#include <stdlib.h>
+#include <limits>
 
 namespace sequence {
 namespace details {
